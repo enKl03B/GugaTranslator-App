@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
     QTextEdit, QPushButton, QLabel, QMessageBox, QDialog, QTabWidget
@@ -9,6 +10,16 @@ from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 import pyperclip
 import darkdetect
 from guga_translator import encode, decode
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 class AboutDialog(QDialog):
     def __init__(self, parent=None):
@@ -26,7 +37,7 @@ class AboutDialog(QDialog):
         about_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         icon_label = QLabel()
-        pixmap = QPixmap('res/icon.png').scaled(80, 80, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        pixmap = QPixmap(resource_path('res/icon.png')).scaled(80, 80, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         icon_label.setPixmap(pixmap)
         about_layout.addWidget(icon_label, alignment=Qt.AlignmentFlag.AlignCenter)
         about_layout.addSpacing(10)
@@ -82,7 +93,7 @@ class AboutDialog(QDialog):
 class GugaTranslatorApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon('res/icon.png'))
+        self.setWindowIcon(QIcon(resource_path('res/icon.png')))
         self.setWindowTitle("🐧 企鹅语转换工具")
         self.setGeometry(100, 100, 600, 550)
         
@@ -90,7 +101,7 @@ class GugaTranslatorApp(QMainWindow):
         self.player = QMediaPlayer()
         self.audio_output = QAudioOutput()
         self.player.setAudioOutput(self.audio_output)
-        self.player.setSource(QUrl.fromLocalFile('res/gugugaga.mp3'))
+        self.player.setSource(QUrl.fromLocalFile(resource_path('res/gugugaga.mp3')))
         
         self._define_themes()
         self.sync_theme_with_system()
