@@ -4,7 +4,8 @@ from PyQt6.QtWidgets import (
     QTextEdit, QPushButton, QLabel, QMessageBox
 )
 from PyQt6.QtGui import QFont, QIcon
-from PyQt6.QtCore import QEvent
+from PyQt6.QtCore import QEvent, QUrl
+from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 import pyperclip
 import darkdetect
 from guga_translator import encode, decode
@@ -12,12 +13,20 @@ from guga_translator import encode, decode
 class GugaTranslatorApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon('icon.png'))
-        self.setWindowTitle("企鹅语转换工具")
+        self.setWindowIcon(QIcon('res/icon.png'))
+        self.setWindowTitle("🐧 企鹅语转换工具")
         self.setGeometry(100, 100, 600, 550)
         
+        self.current_theme = 'light'
         self._define_themes()
         self.sync_theme_with_system()
+
+        self.penguin_click_count = 0
+        self.player = QMediaPlayer()
+        self.audio_output = QAudioOutput()
+        self.player.setAudioOutput(self.audio_output)
+        self.player.setSource(QUrl.fromLocalFile('res/gugugaga.mp3'))
+        self.audio_output.setVolume(0.5)
         
         self.init_ui()
         self.apply_theme()
@@ -70,6 +79,13 @@ class GugaTranslatorApp(QMainWindow):
         self.clear_btn.clicked.connect(self.clear_text)
         input_header_layout.addWidget(input_label)
         input_header_layout.addStretch()
+
+        self.penguin_btn = QPushButton("🐧")
+        self.penguin_btn.setObjectName("penguinBtn")
+        self.penguin_btn.setFixedWidth(40)
+        self.penguin_btn.clicked.connect(self.handle_penguin_click)
+        input_header_layout.addWidget(self.penguin_btn)
+
         input_header_layout.addWidget(self.theme_btn)
         input_header_layout.addWidget(self.clear_btn)
         
@@ -136,13 +152,13 @@ class GugaTranslatorApp(QMainWindow):
             QPushButton#decodeBtn:hover {{ background-color: {theme['btn_decode_hover']}; }}
             QPushButton#swapBtn {{ background-color: {theme['btn_swap_bg']}; }}
             QPushButton#swapBtn:hover {{ background-color: {theme['btn_swap_hover']}; }}
-            QPushButton#clearBtn, QPushButton#copyBtn, QPushButton#themeBtn {{
+            QPushButton#clearBtn, QPushButton#copyBtn, QPushButton#themeBtn, QPushButton#penguinBtn {{
                 font-weight: normal;
                 color: {theme['btn_other_text']};
                 background-color: transparent;
                 border: 1px solid {theme['btn_other_border']};
             }}
-            QPushButton#clearBtn:hover, QPushButton#copyBtn:hover, QPushButton#themeBtn:hover {{
+            QPushButton#clearBtn:hover, QPushButton#copyBtn:hover, QPushButton#themeBtn:hover, QPushButton#penguinBtn:hover {{
                 background-color: {theme['btn_other_bg_hover']};
             }}
         """
@@ -197,6 +213,12 @@ class GugaTranslatorApp(QMainWindow):
         else:
             self.show_message("警告", "没有内容可以复制。")
     
+    def handle_penguin_click(self):
+        self.penguin_click_count += 1
+        if self.penguin_click_count >= 3:
+            self.player.play()
+            self.penguin_click_count = 0
+
     def show_message(self, title, message, level="warning"):
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle(title)
