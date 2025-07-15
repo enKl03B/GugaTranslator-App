@@ -1,3 +1,9 @@
+
+<p align="center">
+  <img src="./res/icon.png" alt="企鹅语转换工具图标">
+</p>
+
+
 # 🐧 企鹅语转换工具-应用端
 
 *好想成为人类啊*
@@ -29,6 +35,9 @@
 ## 🛠️ 开发与构建 
 
 如果您想对本项目进行修改或二次开发，请按照以下步骤操作。
+
+<details>
+<summary>点击查看操作方式</summary>
 
 ### 1. 环境设置
 
@@ -71,6 +80,8 @@ pyinstaller --onefile --windowed --name GugaTranslator --icon="res/icon.png" --a
 ```
 打包成功后，可执行文件会生成在 `dist` 文件夹中。
 
+</details>
+
 ## 🔧 技术栈
 
 *   **Python**: 主要编程语言。
@@ -89,6 +100,5 @@ GugaTrans-App/
   │   └── gugugaga.mp3     # 彩蛋音频
   ├── guga_translator.py   # 核心编码/解码逻辑
   ├── main_gui.py          # PyQt6 GUI 应用程序主文件
-  ├── requirements.txt     # 项目依赖列表
-  └── README.md            # README
+  └──  requirements.txt     # 项目依赖列表
 ```
