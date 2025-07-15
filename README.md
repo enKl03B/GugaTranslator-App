@@ -102,3 +102,7 @@ GugaTrans-App/
   ├── main_gui.py          # PyQt6 GUI 应用程序主文件
   └──  requirements.txt     # 项目依赖列表
 ```
+
+
+## 📃 许可证
+GPL-3.0
