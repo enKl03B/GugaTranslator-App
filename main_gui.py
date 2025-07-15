@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
     QTextEdit, QPushButton, QLabel, QMessageBox
 )
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtCore import QEvent
 import pyperclip
 import darkdetect
@@ -12,7 +12,8 @@ from guga_translator import encode, decode
 class GugaTranslatorApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("🐧 企鹅语转换工具")
+        self.setWindowIcon(QIcon('icon.png'))
+        self.setWindowTitle("企鹅语转换工具")
         self.setGeometry(100, 100, 600, 550)
         
         self._define_themes()

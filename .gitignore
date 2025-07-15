@@ -1,0 +1,20 @@
+# Python
+__pycache__
+*.pyc
+*.pyo
+
+# Virtual environment
+.venv/
+
+# IDE specific files
+.vscode/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Distribution and build files
+/dist/
+/build/
+*.egg-info/ 
+__pycache__/guga_translator.cpython-313.pyc
