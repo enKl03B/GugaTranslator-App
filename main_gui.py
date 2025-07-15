@@ -1,14 +1,83 @@
 import sys
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
-    QTextEdit, QPushButton, QLabel, QMessageBox
+    QTextEdit, QPushButton, QLabel, QMessageBox, QDialog, QTabWidget
 )
-from PyQt6.QtGui import QFont, QIcon
-from PyQt6.QtCore import QEvent, QUrl
+from PyQt6.QtGui import QFont, QIcon, QPixmap
+from PyQt6.QtCore import QEvent, QUrl, Qt
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 import pyperclip
 import darkdetect
 from guga_translator import encode, decode
+
+class AboutDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("关于")
+        self.setFixedSize(450, 280)
+
+        main_layout = QVBoxLayout(self)
+        tab_widget = QTabWidget()
+        main_layout.addWidget(tab_widget)
+
+        # --- About Tab ---
+        about_tab = QWidget()
+        about_layout = QVBoxLayout(about_tab)
+        about_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        icon_label = QLabel()
+        pixmap = QPixmap('res/icon.png').scaled(80, 80, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        icon_label.setPixmap(pixmap)
+        about_layout.addWidget(icon_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        about_layout.addSpacing(10)
+
+        title_label = QLabel("🐧 企鹅语转换工具")
+        title_font = self.font()
+        title_font.setPointSize(20)
+        title_font.setBold(True)
+        title_label.setFont(title_font)
+        about_layout.addWidget(title_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        subtitle_label = QLabel("<i>好像成为人类啊</i>")
+        subtitle_font = self.font()
+        subtitle_font.setPointSize(12)
+        subtitle_label.setFont(subtitle_font)
+        about_layout.addWidget(subtitle_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        about_layout.addStretch()
+
+        version_label = QLabel("Ver:1.0.0")
+        version_font = self.font()
+        version_font.setPointSize(9)
+        version_label.setFont(version_font)
+        about_layout.addWidget(version_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        about_tab.setLayout(about_layout)
+
+        # --- Acknowledgements Tab ---
+        ack_tab = QWidget()
+        ack_layout = QVBoxLayout(ack_tab)
+        
+        ack_text = QLabel()
+        ack_text.setTextFormat(Qt.TextFormat.RichText)
+        ack_text.setOpenExternalLinks(True)
+        ack_text.setWordWrap(True)
+        ack_text.setText("""
+            <h3>致谢</h3>
+            <ul>
+                <li>"gugugaga"音频来自B站，原视频链接：<a href="https://www.bilibili.com/video/BV1ewwxesEu4">https://www.bilibili.com/video/BV1ewwxesEu4</a></li>
+                <br>
+                <li>代码由豆包/Gemini2.5系列大模型完成</li>
+                <br>
+                <li>企鹅图标来源网络</li>
+            </ul>
+        """)
+        ack_layout.addWidget(ack_text)
+        ack_layout.addStretch()
+        ack_tab.setLayout(ack_layout)
+
+        tab_widget.addTab(about_tab, "关于")
+        tab_widget.addTab(ack_tab, "致谢")
 
 class GugaTranslatorApp(QMainWindow):
     def __init__(self):
@@ -17,16 +86,14 @@ class GugaTranslatorApp(QMainWindow):
         self.setWindowTitle("🐧 企鹅语转换工具")
         self.setGeometry(100, 100, 600, 550)
         
-        self.current_theme = 'light'
-        self._define_themes()
-        self.sync_theme_with_system()
-
         self.penguin_click_count = 0
         self.player = QMediaPlayer()
         self.audio_output = QAudioOutput()
         self.player.setAudioOutput(self.audio_output)
         self.player.setSource(QUrl.fromLocalFile('res/gugugaga.mp3'))
-        self.audio_output.setVolume(0.5)
+        
+        self._define_themes()
+        self.sync_theme_with_system()
         
         self.init_ui()
         self.apply_theme()
@@ -40,8 +107,12 @@ class GugaTranslatorApp(QMainWindow):
     def sync_theme_with_system(self):
         """Detect system theme and apply it."""
         theme_name = darkdetect.theme()
-        self.current_theme = 'dark' if theme_name == 'Dark' else 'light'
-        if hasattr(self, 'theme_btn'): # Check if UI is initialized
+        if theme_name:
+            self.current_theme = 'dark' if theme_name == 'Dark' else 'light'
+        else:
+            self.current_theme = 'light'
+        
+        if hasattr(self, 'theme_btn'):
             self.apply_theme()
 
     def _define_themes(self):
@@ -61,6 +132,15 @@ class GugaTranslatorApp(QMainWindow):
         }
 
     def init_ui(self):
+        # Menu Bar
+        menu_bar = self.menuBar()
+        file_menu = menu_bar.addMenu("文件")
+        about_action = file_menu.addAction("关于")
+        about_action.triggered.connect(self.show_about_dialog)
+        file_menu.addSeparator()
+        exit_action = file_menu.addAction("退出")
+        exit_action.triggered.connect(self.close)
+
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
@@ -69,23 +149,25 @@ class GugaTranslatorApp(QMainWindow):
 
         input_header_layout = QHBoxLayout()
         input_label = QLabel("输入文本:")
-        self.theme_btn = QPushButton()
-        self.theme_btn.setObjectName("themeBtn")
-        self.theme_btn.setFixedWidth(40)
-        self.theme_btn.clicked.connect(self.toggle_theme)
-        self.clear_btn = QPushButton("清空")
-        self.clear_btn.setObjectName("clearBtn")
-        self.clear_btn.setFixedWidth(60)
-        self.clear_btn.clicked.connect(self.clear_text)
-        input_header_layout.addWidget(input_label)
-        input_header_layout.addStretch()
-
+        
         self.penguin_btn = QPushButton("🐧")
         self.penguin_btn.setObjectName("penguinBtn")
         self.penguin_btn.setFixedWidth(40)
         self.penguin_btn.clicked.connect(self.handle_penguin_click)
-        input_header_layout.addWidget(self.penguin_btn)
 
+        self.theme_btn = QPushButton()
+        self.theme_btn.setObjectName("themeBtn")
+        self.theme_btn.setFixedWidth(40)
+        self.theme_btn.clicked.connect(self.toggle_theme)
+
+        self.clear_btn = QPushButton("清空")
+        self.clear_btn.setObjectName("clearBtn")
+        self.clear_btn.setFixedWidth(60)
+        self.clear_btn.clicked.connect(self.clear_text)
+        
+        input_header_layout.addWidget(input_label)
+        input_header_layout.addStretch()
+        input_header_layout.addWidget(self.penguin_btn)
         input_header_layout.addWidget(self.theme_btn)
         input_header_layout.addWidget(self.clear_btn)
         
@@ -126,7 +208,14 @@ class GugaTranslatorApp(QMainWindow):
 
     def apply_theme(self):
         theme = self.light_theme if self.current_theme == 'light' else self.dark_theme
+        
+        # Apply to menu bar as well
+        menu_bar_style = f"QMenuBar {{ background-color: {theme['bg']}; color: {theme['text']}; }}"
+        menu_style = f"QMenu {{ background-color: {theme['input_bg']}; color: {theme['text']}; }}"
+        
         stylesheet = f"""
+            {menu_bar_style}
+            {menu_style}
             QWidget {{ background-color: {theme['bg']}; color: {theme['text']}; }}
             QMainWindow {{ background-color: {theme['bg']}; }}
             QLabel {{ color: {theme['text']}; font-size: 14px; background-color: transparent; }}
@@ -216,8 +305,15 @@ class GugaTranslatorApp(QMainWindow):
     def handle_penguin_click(self):
         self.penguin_click_count += 1
         if self.penguin_click_count >= 3:
-            self.player.play()
+            if self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+                self.player.setPosition(0)
+            else:
+                self.player.play()
             self.penguin_click_count = 0
+
+    def show_about_dialog(self):
+        dialog = AboutDialog(self)
+        dialog.exec()
 
     def show_message(self, title, message, level="warning"):
         msg_box = QMessageBox(self)
