@@ -28,6 +28,8 @@
 
 ## 🚀 快速开始 
 - 网页端
+    源码在[GugaTrans](https://github.com/enKl03B/GugaTrans)
+    
     https://guga.078465.xyz/
 
 - 应用端
