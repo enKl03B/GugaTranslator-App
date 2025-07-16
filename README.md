@@ -108,4 +108,4 @@ GugaTrans-App/
 
 
 ## 📃 许可证
-GPL-3.0
+Apache-2.0
