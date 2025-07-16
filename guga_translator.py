@@ -54,28 +54,49 @@ def decode(custom_text: str) -> str:
     """
     if not custom_text:
         return ""
-        
-    # 1. 将输入的自定义字符串按3个字符一组进行分割
-    # 因为编码表中的每个组合都是3个字符长
-    if len(custom_text) % 3 != 0:
-        raise ValueError("输入包含无效的字符组合或长度错误")
 
-    codes = [custom_text[i:i+3] for i in range(0, len(custom_text), 3)]
+    # 1. 动态分词：将输入的自定义字符串分解为基础符号序列
+    tokens = []
+    # 按长度降序排列 ALPHABET，以便优先匹配多字符符号 (如 '哇擦')
+    sorted_alphabet = sorted(ALPHABET, key=len, reverse=True)
+    pos = 0
+    while pos < len(custom_text):
+        found = False
+        for token in sorted_alphabet:
+            if custom_text.startswith(token, pos):
+                tokens.append(token)
+                pos += len(token)
+                found = True
+                break
+        if not found:
+            raise ValueError('输入包含无法识别的字符组合或格式错误')
+            
+    # 2. 将基础符号序列每3个一组拼接成编码组合
+    # 这里的 `tokens` 数组是单个基础符号，而不是 encode 生成的3字符组合
+    # 但实际编码表中查找的 key 是 encodeCustomBase64 生成的 3个 ALPHABET 元素的拼接。
+    # 所以这里需要将单个符号重新组合成3个ALPHABET元素的字符串来匹配 DECODING_TABLE
+    if len(tokens) % 3 != 0:
+        raise ValueError('输入长度无效，无法按3个基础符号分组')
+
+    codes_to_lookup = []
+    for i in range(0, len(tokens), 3):
+        combined_token = "".join(tokens[i:i+3])
+        codes_to_lookup.append(combined_token)
     
-    # 2. 将每个自定义字符组合映射回标准Base64字符
+    # 3. 将每个自定义字符组合映射回标准Base64字符
     base64_chars = []
-    for code in codes:
+    for code in codes_to_lookup:
         index = DECODING_TABLE.get(code)
         if index is None:
             raise ValueError(f'输入包含无法解码的符号组合: "{code}"')
         base64_chars.append(BASE64_CHARS[index])
     
-    # 3. 拼接并添加必要的 '=' 填充
+    # 4. 拼接并添加必要的 '=' 填充
     standard_base64 = "".join(base64_chars)
     padding_needed = (4 - len(standard_base64) % 4) % 4
     standard_base64 += "=" * padding_needed
     
-    # 4. 使用标准Base64解码
+    # 5. 使用标准Base64解码
     try:
         decoded_bytes = base64.b64decode(standard_base64)
         return decoded_bytes.decode('utf-8')
