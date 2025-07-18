@@ -63,6 +63,13 @@ class AboutDialog(QDialog):
         version_label.setFont(version_font)
         about_layout.addWidget(version_label, alignment=Qt.AlignmentFlag.AlignCenter)
         
+        github_link = QLabel()
+        github_link.setTextFormat(Qt.TextFormat.RichText)
+        github_link.setOpenExternalLinks(True)
+        github_link.setText('GitHub: <a href="https://github.com/enKl03B/GugaTranslator-App">https://github.com/enKl03B/GugaTranslator-App</a>')
+        github_link.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        about_layout.addWidget(github_link)
+        
         about_tab.setLayout(about_layout)
 
         # --- Acknowledgements Tab ---
@@ -84,6 +91,7 @@ class AboutDialog(QDialog):
             </ul>
         """)
         ack_layout.addWidget(ack_text)
+        
         ack_layout.addStretch()
         ack_tab.setLayout(ack_layout)
 
